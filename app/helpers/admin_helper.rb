@@ -179,20 +179,44 @@ module AdminHelper
     name.to_s == "tracks"
   end
 
-  # Array of flat objects (all scalar values) — rendered as repeatable
-  # field-rows instead of a raw JSON textarea. Media-named fields inside
-  # each row get the thumbnail + Browse picker.
+  # Array of objects rendered as repeatable field-rows (cards) instead of a
+  # raw JSON textarea. Rows may nest string lists, further object lists, or
+  # plain sub-objects — the client editor renders those recursively as plain
+  # controls. Media-named fields inside each row get the Browse picker.
   # Empty arrays for these names still get the card editor (an "Add entry"
-  # button with the right columns) instead of a bare JSON textarea.
-  OBJECT_LIST_FIELDS = %w[experiences subMonuments stops gates cards seasons rows].freeze
+  # button with the right columns) instead of a bare textarea.
+  OBJECT_LIST_FIELDS = %w[experiences subMonuments stops gates cards seasons rows groups reachItems travelItems].freeze
 
   def object_list_field?(value, name = nil)
     return true if value == [] && OBJECT_LIST_FIELDS.include?(name.to_s)
 
-    value.is_a?(Array) && value.any? &&
-      value.all? do |v|
-        v.is_a?(Hash) && v.values.all? { |x| x.nil? || x.is_a?(String) || x.is_a?(Numeric) || x == true || x == false }
-      end
+    value.is_a?(Array) && value.any? && value.all? { |v| v.is_a?(Hash) && editable_struct?(v) }
+  end
+
+  # A hash whose values are all scalars / string lists / nested editable
+  # structures — safe for the plain-control editor (bounded depth).
+  def editable_struct?(hash, depth = 0)
+    return false if depth > 3
+
+    hash.values.all? do |x|
+      x.nil? || x.is_a?(String) || x.is_a?(Numeric) || x == true || x == false ||
+        (x.is_a?(Array) && x.all? { |s| s.is_a?(String) }) ||
+        (x.is_a?(Array) && x.all? { |h| h.is_a?(Hash) && editable_struct?(h, depth + 1) }) ||
+        (x.is_a?(Hash) && editable_struct?(x, depth + 1))
+    end
+  end
+
+  # Hash field (e.g. a monument's artiSchedule) editable as nested plain
+  # controls instead of a JSON textarea.
+  def object_field?(value)
+    value.is_a?(Hash) && editable_struct?(value)
+  end
+
+  # Array of plain strings that isn't an image list — paragraphs, bullet
+  # points, feature lines. Rendered as one text row per item.
+  def text_list_field?(name, value)
+    value.is_a?(Array) && value.all? { |v| v.is_a?(String) } &&
+      !image_list_field?(name, value) && !OBJECT_LIST_FIELDS.include?(name.to_s)
   end
 
   # Array of image/video path strings — rendered with a repeatable

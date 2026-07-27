@@ -1,8 +1,11 @@
 <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;">
   <h2 class="adm-page-title" style="margin-bottom:0;">Edit: <%= key_label(@block.key) %></h2>
+  <% if current_user&.admin? %>
   <div style="display:flex; gap:10px;">
-    <a href="<%= edit_admin_content_block_path(@block.key) %>" class="adm-btn adm-btn-outline">Raw JSON</a>
+    <%# Escape hatch for admins only — content managers never see JSON. %>
+    <a href="<%= edit_admin_content_block_path(@block.key) %>" class="adm-btn adm-btn-outline">Advanced editor</a>
   </div>
+  <% end %>
 </div>
 
 <div class="adm-card">

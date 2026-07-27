@@ -449,88 +449,187 @@
           render(); sync();
         });
 
-        // Repeatable object-list editor: arrays of flat objects (cards, stops,
-        // links…) become field-rows; media-named fields get thumb + Browse.
+        // ── Recursive plain-control factory ─────────────────────
+        // Renders any editable value (scalar, string list, object, list of
+        // objects) as plain form controls — no JSON is ever shown. Editors
+        // sync back into a hidden textarea the server already parses.
         const OBJ_MEDIA_RE = /image|photo|video|src|icon|logo|bg|thumbnail|panorama/i;
-        document.querySelectorAll('[data-objectlist-editor]').forEach(editor => {
-          const json = editor.parentNode.querySelector('[data-objectlist-json]');
-          if (!json) return;
-          let items;
-          try { items = JSON.parse(json.value || '[]'); } catch (e) { return; } // keep raw JSON on parse error
-          if (!Array.isArray(items)) return;
-          json.style.display = 'none';
-          editor.style.cssText = 'display:flex; flex-direction:column; gap:12px; margin-bottom:8px;';
 
-          function sync() { json.value = JSON.stringify(items, null, 2); }
+        function admFieldLabelEl(text) {
+          const lab = document.createElement('label');
+          lab.style.cssText = 'display:block; font-size:12px; font-weight:600; color:#8a5a48; margin-bottom:4px;';
+          lab.textContent = text;
+          return lab;
+        }
 
-          function makeControl(row, key) {
-            const val = row[key];
-            if (val === true || val === false) {
-              const sel = document.createElement('select');
-              sel.className = 'adm-input';
-              sel.innerHTML = '<option value="true">true (visible / yes)</option><option value="false">false (hidden / no)</option>';
-              sel.value = String(val);
-              sel.addEventListener('change', () => { row[key] = sel.value === 'true'; sync(); });
-              return sel;
-            }
-            if (typeof val === 'number') {
-              const inp = document.createElement('input');
-              inp.type = 'number'; inp.step = 'any'; inp.className = 'adm-input'; inp.value = val;
-              inp.addEventListener('input', () => { const n = parseFloat(inp.value); row[key] = isNaN(n) ? 0 : n; sync(); });
-              return inp;
-            }
-            const str = String(val == null ? '' : val);
-            // Media paths can be long (ActiveStorage proxy URLs) — check the
-            // media-name test before the long-string textarea fallback.
-            if (!OBJ_MEDIA_RE.test(key) && (str.length > 90 || str.includes('\n'))) {
-              const ta = document.createElement('textarea');
-              ta.rows = 3; ta.className = 'adm-input'; ta.value = str;
-              ta.addEventListener('input', () => { row[key] = ta.value; sync(); });
-              return ta;
-            }
+        // Build a control that edits holder[key]; calls onChange() after edits.
+        function admControlFor(holder, key, onChange, depth) {
+          depth = depth || 0;
+          const val = holder[key];
+
+          if (val === true || val === false) {
+            const sel = document.createElement('select');
+            sel.className = 'adm-input';
+            sel.innerHTML = '<option value="true">Yes (visible)</option><option value="false">No (hidden)</option>';
+            sel.value = String(val);
+            sel.addEventListener('change', () => { holder[key] = sel.value === 'true'; onChange(); });
+            return sel;
+          }
+
+          if (typeof val === 'number') {
             const inp = document.createElement('input');
-            inp.type = 'text'; inp.className = 'adm-input'; inp.value = str;
-            inp.addEventListener('input', () => { row[key] = inp.value; sync(); });
-            if (OBJ_MEDIA_RE.test(key)) {
-              const wrap = document.createElement('div');
-              wrap.style.cssText = 'display:flex; align-items:center; gap:10px;';
-              const thumb = document.createElement('span');
-              thumb.style.cssText = 'width:52px; height:40px; border-radius:7px; flex-shrink:0; display:flex; align-items:center; justify-content:center; background:#e8ddcf; overflow:hidden; font-size:17px;';
-              function syncThumb() {
-                const v = inp.value.trim();
-                thumb.innerHTML = v && !/\.(mp4|webm|mov|m4v)(\?|$)/i.test(v)
-                  ? '<img src="' + v + '" style="width:100%; height:100%; object-fit:cover;" onerror="this.replaceWith(\'🖼\')">'
-                  : (v ? '🎞' : '🖼');
-              }
-              inp.addEventListener('input', syncThumb);
-              const browse = document.createElement('button');
-              browse.type = 'button'; browse.className = 'adm-btn adm-btn-outline';
-              browse.style.cssText = 'padding:7px 14px; font-size:13px; white-space:nowrap;';
-              browse.textContent = 'Browse…';
-              browse.addEventListener('click', () => admOpenMediaModal(inp));
-              syncThumb();
-              wrap.append(thumb, inp, browse);
-              return wrap;
-            }
+            inp.type = 'number'; inp.step = 'any'; inp.className = 'adm-input'; inp.value = val;
+            inp.addEventListener('input', () => { const n = parseFloat(inp.value); holder[key] = isNaN(n) ? 0 : n; onChange(); });
             return inp;
           }
 
+          // list of plain strings → one text row per item
+          if (Array.isArray(val) && val.every(v => typeof v === 'string') &&
+              !(OBJ_MEDIA_RE.test(String(key)) )) {
+            return admStringListControl(holder, key, onChange);
+          }
+
+          // list of objects → nested cards with add/remove/reorder
+          if (Array.isArray(val) && val.every(v => v && typeof v === 'object' && !Array.isArray(v))) {
+            return admObjectListControl(holder, key, onChange, depth);
+          }
+
+          // plain sub-object → its fields, boxed
+          if (val && typeof val === 'object' && !Array.isArray(val)) {
+            const box = document.createElement('div');
+            box.style.cssText = 'border:1px solid #e0d5c5; border-radius:8px; padding:10px 12px; background:#fff;';
+            Object.keys(val).forEach(k => {
+              const fld = document.createElement('div');
+              fld.style.cssText = 'margin-bottom:10px;';
+              fld.appendChild(admFieldLabelEl(k));
+              fld.appendChild(admControlFor(val, k, onChange, depth + 1));
+              box.appendChild(fld);
+            });
+            return box;
+          }
+
+          // strings (and null)
+          const str = String(val == null ? '' : val);
+          const inp = document.createElement('input');
+          inp.type = 'text'; inp.className = 'adm-input'; inp.value = str;
+          inp.addEventListener('input', () => { holder[key] = inp.value; onChange(); });
+
+          if (OBJ_MEDIA_RE.test(String(key))) {
+            const wrap = document.createElement('div');
+            wrap.style.cssText = 'display:flex; align-items:center; gap:10px;';
+            const thumb = document.createElement('span');
+            thumb.style.cssText = 'width:52px; height:40px; border-radius:7px; flex-shrink:0; display:flex; align-items:center; justify-content:center; background:#e8ddcf; overflow:hidden; font-size:17px;';
+            function syncThumb() {
+              const v = inp.value.trim();
+              thumb.innerHTML = v && !/\.(mp4|webm|mov|m4v)(\?|$)/i.test(v)
+                ? '<img src="' + v + '" style="width:100%; height:100%; object-fit:cover;" onerror="this.replaceWith(\'🖼\')">'
+                : (v ? '🎞' : '🖼');
+            }
+            inp.addEventListener('input', syncThumb);
+            const browse = document.createElement('button');
+            browse.type = 'button'; browse.className = 'adm-btn adm-btn-outline';
+            browse.style.cssText = 'padding:7px 14px; font-size:13px; white-space:nowrap;';
+            browse.textContent = 'Browse…';
+            browse.addEventListener('click', () => admOpenMediaModal(inp));
+            syncThumb();
+            wrap.append(thumb, inp, browse);
+            return wrap;
+          }
+
+          if (str.length > 90 || str.includes('\n')) {
+            const ta = document.createElement('textarea');
+            ta.rows = 3; ta.className = 'adm-input'; ta.value = str;
+            ta.addEventListener('input', () => { holder[key] = ta.value; onChange(); });
+            return ta;
+          }
+          return inp;
+        }
+
+        // One text row per string, with add / remove / reorder.
+        function admStringListControl(holder, key, onChange) {
+          const box = document.createElement('div');
+          box.style.cssText = 'display:flex; flex-direction:column; gap:8px;';
           function render() {
-            editor.innerHTML = '';
+            const items = holder[key];
+            box.innerHTML = '';
+            if (!items.length) {
+              const empty = document.createElement('div');
+              empty.className = 'adm-muted';
+              empty.style.cssText = 'font-size:13px; padding:2px 0;';
+              empty.textContent = 'Nothing here yet — add a line below.';
+              box.appendChild(empty);
+            }
+            items.forEach((v, i) => {
+              const row = document.createElement('div');
+              row.style.cssText = 'display:flex; gap:8px; align-items:flex-start;';
+              const long = v.length > 70 || v.includes('\n');
+              const inp = document.createElement(long ? 'textarea' : 'input');
+              if (long) inp.rows = 3; else inp.type = 'text';
+              inp.className = 'adm-input'; inp.value = v;
+              inp.addEventListener('input', () => { items[i] = inp.value; onChange(); });
+              const btns = document.createElement('span');
+              btns.style.cssText = 'display:flex; gap:2px; flex-shrink:0; padding-top:6px;';
+              [['↑', () => { if (i > 0) { [items[i-1], items[i]] = [items[i], items[i-1]]; onChange(); render(); } }],
+               ['↓', () => { if (i < items.length - 1) { [items[i+1], items[i]] = [items[i], items[i+1]]; onChange(); render(); } }],
+               ['×', () => { items.splice(i, 1); onChange(); render(); }]].forEach(([label, fn]) => {
+                const b = document.createElement('button');
+                b.type = 'button'; b.className = 'adm-track-remove'; b.textContent = label;
+                b.addEventListener('click', fn);
+                btns.appendChild(b);
+              });
+              row.append(inp, btns);
+              box.appendChild(row);
+            });
+            const add = document.createElement('button');
+            add.type = 'button'; add.className = 'adm-btn adm-btn-outline';
+            add.style.cssText = 'align-self:flex-start; padding:7px 14px; font-size:13px;';
+            add.textContent = '+ Add line';
+            add.addEventListener('click', () => { holder[key].push(''); onChange(); render(); });
+            box.appendChild(add);
+          }
+          render();
+          return box;
+        }
+
+        // Cards for a list of objects, recursing into nested values.
+        function admObjectListControl(holder, key, onChange, depth) {
+          const box = document.createElement('div');
+          box.style.cssText = 'display:flex; flex-direction:column; gap:12px;';
+          function blankFrom(v) {
+            if (v === true || v === false) return v;
+            if (typeof v === 'number') return 0;
+            if (Array.isArray(v)) return [];
+            if (v && typeof v === 'object') {
+              const o = {};
+              Object.keys(v).forEach(k => { o[k] = blankFrom(v[k]); });
+              return o;
+            }
+            return '';
+          }
+          function render() {
+            const items = holder[key];
+            box.innerHTML = '';
+            if (!items.length) {
+              const empty = document.createElement('div');
+              empty.className = 'adm-muted';
+              empty.style.cssText = 'font-size:13px; padding:2px 0;';
+              empty.textContent = 'No entries yet — add one below.';
+              box.appendChild(empty);
+            }
             items.forEach((row, i) => {
               const card = document.createElement('div');
-              card.style.cssText = 'border:1px solid #e0d5c5; border-radius:10px; padding:14px 16px; background:#faf5ee;';
-
+              card.style.cssText = 'border:1px solid #e0d5c5; border-radius:10px; padding:14px 16px; background:' + (depth ? '#fdfaf5' : '#faf5ee') + ';';
               const head = document.createElement('div');
               head.style.cssText = 'display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;';
               const title = document.createElement('span');
               title.style.cssText = 'font-size:12px; font-weight:700; color:#6e1603; text-transform:uppercase; letter-spacing:0.05em;';
-              title.textContent = '#' + (i + 1) + (row.name || row.title || row.label || row.heading ? ' — ' + (row.name || row.title || row.label || row.heading) : '');
+              const nick = row.name || row.title || row.label || row.heading || row.time || '';
+              title.textContent = '#' + (i + 1) + (nick ? ' — ' + nick : '');
               const btns = document.createElement('span');
               btns.style.cssText = 'display:flex; gap:6px;';
-              [['↑', () => { if (i > 0) { [items[i-1], items[i]] = [items[i], items[i-1]]; sync(); render(); } }],
-               ['↓', () => { if (i < items.length - 1) { [items[i+1], items[i]] = [items[i], items[i+1]]; sync(); render(); } }],
-               ['×', () => { items.splice(i, 1); sync(); render(); }]].forEach(([label, fn]) => {
+              [['↑', () => { if (i > 0) { [items[i-1], items[i]] = [items[i], items[i-1]]; onChange(); render(); } }],
+               ['↓', () => { if (i < items.length - 1) { [items[i+1], items[i]] = [items[i], items[i+1]]; onChange(); render(); } }],
+               ['×', () => { items.splice(i, 1); onChange(); render(); }]].forEach(([label, fn]) => {
                 const b = document.createElement('button');
                 b.type = 'button'; b.className = 'adm-track-remove'; b.textContent = label;
                 b.addEventListener('click', fn);
@@ -538,19 +637,15 @@
               });
               head.append(title, btns);
               card.appendChild(head);
-
-              Object.keys(row).forEach(key => {
+              Object.keys(row).forEach(k => {
                 const fld = document.createElement('div');
                 fld.style.cssText = 'margin-bottom:10px;';
-                const lab = document.createElement('label');
-                lab.style.cssText = 'display:block; font-size:12px; font-weight:600; color:#8a5a48; margin-bottom:4px;';
-                lab.textContent = key;
-                fld.append(lab, makeControl(row, key));
+                fld.appendChild(admFieldLabelEl(k));
+                fld.appendChild(admControlFor(row, k, onChange, depth + 1));
                 card.appendChild(fld);
               });
-              editor.appendChild(card);
+              box.appendChild(card);
             });
-
             const add = document.createElement('button');
             add.type = 'button'; add.className = 'adm-btn adm-btn-outline';
             add.style.cssText = 'align-self:flex-start; padding:8px 16px; font-size:13px;';
@@ -562,18 +657,69 @@
                 stops:        { num: 1, image: '', name: '', link: '' },
                 gates:        { name: '', subtitle: '', image: '', body: '' }
               };
-              const nameMatch = (json.getAttribute('name') || '').match(/\[([^\]]+)\]$/);
-              const template = items[items.length - 1] || FIELD_TEMPLATES[nameMatch && nameMatch[1]] || {};
-              const fresh = {};
-              Object.keys(template).forEach(k => {
-                const v = template[k];
-                fresh[k] = (v === true || v === false) ? v : (typeof v === 'number' ? 0 : '');
-              });
-              items.push(fresh); sync(); render();
+              const template = holder[key][holder[key].length - 1] || FIELD_TEMPLATES[key] || {};
+              holder[key].push(blankFrom(template));
+              onChange(); render();
             });
-            editor.appendChild(add);
+            box.appendChild(add);
           }
-          render(); sync();
+          render();
+          return box;
+        }
+
+        // Wire an editor div + hidden JSON textarea to a top-level control.
+        function admBindEditor(editor, json, build) {
+          let data;
+          try { data = JSON.parse(json.value || 'null'); } catch (e) { return; } // leave raw textarea visible on parse error
+          json.style.display = 'none';
+          const state = { v: data };
+          const sync = () => { json.value = JSON.stringify(state.v, null, 2); };
+          editor.appendChild(build(state, sync));
+          sync();
+        }
+
+        // Lists of objects (cards, stops, gates, route groups…)
+        document.querySelectorAll('[data-objectlist-editor]').forEach(editor => {
+          const json = editor.parentNode.querySelector('[data-objectlist-json]');
+          if (!json) return;
+          const nameMatch = (json.getAttribute('name') || '').match(/\[([^\]]+)\]$/);
+          const fieldName = nameMatch ? nameMatch[1] : '';
+          admBindEditor(editor, json, (state, sync) => {
+            if (!Array.isArray(state.v)) state.v = [];
+            // keep the template lookup working by aliasing the field name
+            const holder = { [fieldName || 'items']: state.v };
+            return admObjectListControl(holder, fieldName || 'items', sync, 0);
+          });
+        });
+
+        // Lists of plain text lines (paragraphs, bullet points, features)
+        document.querySelectorAll('[data-textlist-editor]').forEach(editor => {
+          const json = editor.parentNode.querySelector('[data-textlist-json]');
+          if (!json) return;
+          admBindEditor(editor, json, (state, sync) => {
+            if (!Array.isArray(state.v)) state.v = [];
+            const holder = { items: state.v };
+            return admStringListControl(holder, 'items', sync);
+          });
+        });
+
+        // Single structured objects (e.g. a monument's arti schedule)
+        document.querySelectorAll('[data-objecteditor]').forEach(editor => {
+          const json = editor.parentNode.querySelector('[data-objecteditor-json]');
+          if (!json) return;
+          admBindEditor(editor, json, (state, sync) => {
+            if (!state.v || typeof state.v !== 'object' || Array.isArray(state.v)) state.v = {};
+            const box = document.createElement('div');
+            box.style.cssText = 'display:flex; flex-direction:column;';
+            Object.keys(state.v).forEach(k => {
+              const fld = document.createElement('div');
+              fld.style.cssText = 'margin-bottom:10px;';
+              fld.appendChild(admFieldLabelEl(k));
+              fld.appendChild(admControlFor(state.v, k, sync, 0));
+              box.appendChild(fld);
+            });
+            return box;
+          });
         });
       });
       document.getElementById('adm-media-modal').addEventListener('click', e => {
