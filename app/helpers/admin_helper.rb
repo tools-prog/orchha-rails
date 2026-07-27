@@ -29,6 +29,7 @@ module AdminHelper
     "blogItems"         => "Blogs",
     "blogsPage"         => "Blogs Page",
     "museums"           => "Museums",
+    "museumsPage"       => "Museums Page Settings",
     "itineraries"       => "Itineraries",
     "freedomFighters"   => "Freedom Fighters",
     "hohoServices"      => "Hop-on Hop-off Services",
@@ -51,12 +52,14 @@ module AdminHelper
 
   # Sidebar structure: groups of items. Each item points at a section editor
   # (hash key), a collection manager (array key), custom pages, or media.
+  # Grouped to mirror the public site: every page in visitor-facing order,
+  # then News/Blogs under Resources, then shared libraries.
   def admin_nav
     [
       { group: "Overview", items: [
         { label: "Dashboard", path: admin_root_path, match: %r{\A/admin\z} }
       ] },
-      { group: "Pages", items: [
+      { group: "Site Pages", items: [
         { label: "Home", path: admin_edit_section_path("homePage"), match: %r{/(sections/homePage|admin/hero)},
           children: [
             { label: "Page Content", path: admin_edit_section_path("homePage"), match: %r{/sections/homePage} },
@@ -66,43 +69,55 @@ module AdminHelper
         { label: "Monuments", path: admin_collection_path("monuments"), match: %r{/((collections|sections)/monuments|sections/darwazasPage)},
           children: [
             { label: "All Monuments", path: admin_collection_path("monuments"), match: %r{/collections/monuments} },
-            { label: "Page Settings", path: admin_edit_section_path("monumentsPage"), match: %r{/sections/monumentsPage} },
-            { label: "Darwazas Page", path: admin_edit_section_path("darwazasPage"), match: %r{/sections/darwazasPage} }
+            { label: "Darwazas Page", path: admin_edit_section_path("darwazasPage"), match: %r{/sections/darwazasPage} },
+            { label: "Page Settings", path: admin_edit_section_path("monumentsPage"), match: %r{/sections/monumentsPage} }
           ] },
-        { label: "Experiences", path: admin_collection_path("experienceItems"), match: %r{/(collections/(experienceItems|cuisineItems)|sections/(experiencesPage|artWalkPage|ecoTrailPage|riverKayakingPage|religiousWalkPage|citadelWalkPage))},
+        { label: "Experiences & Walks", path: admin_collection_path("experienceItems"), match: %r{/(collections/(experienceItems|cuisineItems)|sections/(experiencesPage|artWalkPage|ecoTrailPage|riverKayakingPage|religiousWalkPage|citadelWalkPage|sunsetBetwaPage))},
           children: [
             { label: "All Experiences", path: admin_collection_path("experienceItems"), match: %r{/collections/experienceItems} },
             { label: "Art Walk Page", path: admin_edit_section_path("artWalkPage"), match: %r{/sections/artWalkPage} },
             { label: "Citadel Walk Page", path: admin_edit_section_path("citadelWalkPage"), match: %r{/sections/citadelWalkPage} },
             { label: "Eco Trail Page", path: admin_edit_section_path("ecoTrailPage"), match: %r{/sections/ecoTrailPage} },
-            { label: "River Kayaking Page", path: admin_edit_section_path("riverKayakingPage"), match: %r{/sections/riverKayakingPage} },
             { label: "Religious Walk Page", path: admin_edit_section_path("religiousWalkPage"), match: %r{/sections/religiousWalkPage} },
+            { label: "River Kayaking Page", path: admin_edit_section_path("riverKayakingPage"), match: %r{/sections/riverKayakingPage} },
             { label: "Sunset At Betwa Page", path: admin_edit_section_path("sunsetBetwaPage"), match: %r{/sections/sunsetBetwaPage} },
             { label: "Cuisine Items", path: admin_collection_path("cuisineItems"), match: %r{/collections/cuisineItems} },
             { label: "Page Settings", path: admin_edit_section_path("experiencesPage"), match: %r{/sections/experiencesPage} }
+          ] },
+        { label: "Art of Orchha", path: admin_collection_path("artFrescoes"), match: %r{/(collections/artFrescoes|sections/artFrescoesPage)},
+          children: [
+            { label: "All Frescoes", path: admin_collection_path("artFrescoes"), match: %r{/collections/artFrescoes} },
+            { label: "Page Settings", path: admin_edit_section_path("artFrescoesPage"), match: %r{/sections/artFrescoesPage} }
+          ] },
+        { label: "Museums", path: admin_collection_path("museums"), match: %r{/(collections/museums|sections/museumsPage)},
+          children: [
+            { label: "All Museums", path: admin_collection_path("museums"), match: %r{/collections/museums} },
+            { label: "Page Settings", path: admin_edit_section_path("museumsPage"), match: %r{/sections/museumsPage} }
           ] },
         { label: "Events", path: admin_collection_path("events"), match: %r{/(collections/events|sections/eventsPage)},
           children: [
             { label: "All Events", path: admin_collection_path("events"), match: %r{/collections/events\b} },
             { label: "Page Settings", path: admin_edit_section_path("eventsPage"), match: %r{/sections/eventsPage} }
           ] },
+        { label: "Light & Sound Show", path: admin_edit_section_path("soundLightShowPage"), match: %r{/sections/soundLightShowPage} },
+        { label: "HOHO Services", path: admin_collection_path("hohoServices"), match: %r{/collections/hohoServices} },
         { label: "Accommodation", path: admin_collection_path("accommodations"), match: %r{/(collections/accommodations|sections/accommodationPage)},
           children: [
             { label: "All Stays", path: admin_collection_path("accommodations"), match: %r{/collections/accommodations} },
             { label: "Page Settings", path: admin_edit_section_path("accommodationPage"), match: %r{/sections/accommodationPage} }
           ] },
-        { label: "Light & Sound Show", path: admin_edit_section_path("soundLightShowPage"), match: %r{/sections/soundLightShowPage} },
         { label: "Plan Your Visit", path: admin_edit_section_path("planYourVisitPage"), match: %r{/(sections/planYourVisitPage|collections/itineraries)},
           children: [
             { label: "Page Content", path: admin_edit_section_path("planYourVisitPage"), match: %r{/sections/planYourVisitPage} },
             { label: "Itineraries", path: admin_collection_path("itineraries"), match: %r{/collections/itineraries} }
           ] },
         { label: "Visit Orchha", path: admin_edit_section_path("visitOrchhaPage"), match: %r{/sections/visitOrchhaPage} },
+        { label: "Freedom Fighters", path: admin_collection_path("freedomFighters"), match: %r{/collections/freedomFighters} },
         { label: "Sabhyata Foundation", path: admin_edit_section_path("sabhyataPage"), match: %r{/sections/sabhyataPage} },
         { label: "Support Us", path: admin_edit_section_path("supportUsPage"), match: %r{/sections/supportUsPage} },
         { label: "Custom Pages", path: admin_pages_path, match: %r{/admin/pages} }
       ] },
-      { group: "Content", items: [
+      { group: "Resources", items: [
         { label: "News", path: admin_collection_path("newsItems"), match: %r{/(collections/newsItems|sections/newsPage)},
           children: [
             { label: "All News", path: admin_collection_path("newsItems"), match: %r{/collections/newsItems} },
@@ -112,19 +127,11 @@ module AdminHelper
           children: [
             { label: "All Blogs", path: admin_collection_path("blogItems"), match: %r{/collections/blogItems} },
             { label: "Page Settings", path: admin_edit_section_path("blogsPage"), match: %r{/sections/blogsPage} }
-          ] },
-        { label: "Museums", path: admin_collection_path("museums"), match: %r{/collections/museums} },
-        { label: "Freedom Fighters", path: admin_collection_path("freedomFighters"), match: %r{/collections/freedomFighters} },
-        { label: "HOHO Services", path: admin_collection_path("hohoServices"), match: %r{/collections/hohoServices} },
-        { label: "Audio Guides", path: admin_collection_path("audioGuides"), match: %r{/collections/audioGuides} },
-        { label: "Art of Orchha / Frescoes", path: admin_collection_path("artFrescoes"), match: %r{/(collections/artFrescoes|sections/artFrescoesPage)},
-          children: [
-            { label: "All Frescoes", path: admin_collection_path("artFrescoes"), match: %r{/collections/artFrescoes} },
-            { label: "Page Settings", path: admin_edit_section_path("artFrescoesPage"), match: %r{/sections/artFrescoesPage} }
           ] }
       ] },
       { group: "Library", items: [
         { label: "Media", path: admin_media_path, match: %r{/admin/media} },
+        { label: "Audio Guides", path: admin_collection_path("audioGuides"), match: %r{/collections/audioGuides} },
         { label: "Site Settings", path: admin_edit_section_path("settings"), match: %r{/sections/settings} },
         { label: "Backup", path: admin_export_path, match: /never/ }
       ] }
