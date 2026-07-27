@@ -31,12 +31,24 @@
         var btn = document.querySelector('.nav-resources-btn');
         if (!btn) return;
 
+        // Match the page's own Discover dropdown styling: home's charcoal
+        // .nav-dropdown, the monument pages' .mdet-nav-dropdown, or the
+        // listing pages' maroon .hist-nav-dropdown.
+        var ddClass, itemClass;
+        if (btn.classList.contains('nav-link')) {
+          ddClass = 'nav-dropdown res-dd'; itemClass = 'nav-dropdown-item';
+        } else if (btn.classList.contains('mdet-nav-link')) {
+          ddClass = 'mdet-nav-dropdown res-dd'; itemClass = 'mdet-nav-dd-item';
+        } else {
+          ddClass = 'hist-nav-dropdown res-dd'; itemClass = 'hist-nav-dropdown-item';
+        }
+
         var dd = document.createElement('div');
-        dd.className = 'hist-nav-dropdown res-dd';
+        dd.className = ddClass;
         dd.setAttribute('role', 'menu');
         [['News', '/news'], ['Blogs', '/blogs']].forEach(function (item) {
           var a = document.createElement('a');
-          a.className = 'hist-nav-dropdown-item';
+          a.className = itemClass;
           a.setAttribute('role', 'menuitem');
           a.href = item[1];
           a.textContent = item[0];
@@ -103,7 +115,7 @@
         // The Discover dropdown lives outside the bar — count it as part of
         // the hover region so the nav doesn't tuck away mid-navigation.
         var regions = [nav];
-        document.querySelectorAll('.nav-dropdown, .hist-nav-dropdown, .mdet-nav-dd').forEach(function (dd) { regions.push(dd); });
+        document.querySelectorAll('.nav-dropdown, .hist-nav-dropdown, .mdet-nav-dropdown, .res-dd').forEach(function (dd) { regions.push(dd); });
         regions.forEach(function (el) {
           el.addEventListener('mouseenter', function () { hovering++; show(); });
           el.addEventListener('mouseleave', function () { hovering = Math.max(0, hovering - 1); scheduleHide(); });
