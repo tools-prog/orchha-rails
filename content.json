@@ -1304,6 +1304,42 @@
     "contactEmail": "contact@orchha.com",
     "contactPhone": "+91 87963 83600"
   },
+  "blogsPage": {
+    "heading": "Orchha Blogs",
+    "subheading": "Long reads, travel notes and stories from the people who know Orchha best."
+  },
+  "blogItems": [
+    {
+      "id": "blog-1",
+      "heading": "A Day in Orchha: A Traveller's Itinerary",
+      "author": "Sabhyata Foundation",
+      "date": "18 July 2026",
+      "text": "From sunrise at the cenotaphs to the evening aarti at Ram Raja Temple — how to spend one unhurried day in the town where time slows down.",
+      "image": "/images/exp_sunset_betwa.jpg",
+      "link": "#",
+      "visible": true
+    },
+    {
+      "id": "blog-2",
+      "heading": "The Murals of Raja Mahal: Stories in Pigment",
+      "author": "Sabhyata Foundation",
+      "date": "11 July 2026",
+      "text": "Behind the faded doors of the citadel lie ceilings that still blaze with Bundeli colour. A close look at the frescoes and the tales they tell.",
+      "image": "/images/aw_mural_large.jpg",
+      "link": "#",
+      "visible": true
+    },
+    {
+      "id": "blog-3",
+      "heading": "Betwa at Dusk: Why Evenings in Orchha Feel Different",
+      "author": "Sabhyata Foundation",
+      "date": "4 July 2026",
+      "text": "Kayaks glide past the chhatris as the river turns copper. Notes on the gentlest hour of the day on the Betwa riverside.",
+      "image": "/images/exp_river_kayaking.jpg",
+      "link": "#",
+      "visible": true
+    }
+  ],
   "newsPage": {
     "heading": "Orchha in News",
     "subheading": "A curated stream of heritage stories, conservation updates, cultural events, and evolving narratives from the heart of Orchha.",

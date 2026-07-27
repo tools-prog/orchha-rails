@@ -23,6 +23,55 @@
         btn.setAttribute('aria-expanded', open ? 'true' : 'false');
       });
 
+      // "Resources" nav dropdown (News / Blogs), shared by every navbar
+      // variant. The menu is appended to <body> and position:fixed so
+      // backdrop-filter ancestors can't trap it (same trick as Discover).
+      // Runs before the autohide block below so it counts as a hover region.
+      (function () {
+        var btn = document.querySelector('.nav-resources-btn');
+        if (!btn) return;
+
+        var dd = document.createElement('div');
+        dd.className = 'hist-nav-dropdown res-dd';
+        dd.setAttribute('role', 'menu');
+        [['News', '/news'], ['Blogs', '/blogs']].forEach(function (item) {
+          var a = document.createElement('a');
+          a.className = 'hist-nav-dropdown-item';
+          a.setAttribute('role', 'menuitem');
+          a.href = item[1];
+          a.textContent = item[0];
+          dd.appendChild(a);
+        });
+        document.body.appendChild(dd);
+
+        var closeTimer;
+        function openDd() {
+          clearTimeout(closeTimer);
+          var r = btn.getBoundingClientRect();
+          dd.style.top  = (r.bottom + 8) + 'px';
+          dd.style.left = r.left + 'px';
+          dd.classList.add('open');
+          btn.setAttribute('aria-expanded', 'true');
+        }
+        function closeDd() {
+          dd.classList.remove('open');
+          btn.setAttribute('aria-expanded', 'false');
+        }
+        function scheduleClose() { closeTimer = setTimeout(closeDd, 200); }
+        btn.addEventListener('mouseenter', openDd);
+        btn.addEventListener('mouseleave', scheduleClose);
+        dd.addEventListener('mouseenter', function () { clearTimeout(closeTimer); });
+        dd.addEventListener('mouseleave', scheduleClose);
+        btn.addEventListener('click', function (e) {
+          if (dd.classList.contains('open')) return; // second click follows the link
+          e.preventDefault();
+          openDd();
+        });
+        document.addEventListener('click', function (e) {
+          if (!btn.contains(e.target) && !dd.contains(e.target)) closeDd();
+        });
+      })();
+
       // Auto-hide the nav on every page: visible briefly on load, then
       // tucked away — reveal by moving the cursor to the top edge or
       // hovering the bar. Pointer-only, so touch devices keep it visible.

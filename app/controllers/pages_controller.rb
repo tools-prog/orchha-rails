@@ -95,6 +95,16 @@ class PagesController < ApplicationController
     @page = {}; @items = []; @home = {}
   end
 
+  def blogs
+    raw = ContentStore.raw
+    @page  = raw["blogsPage"] || {}
+    @items = (raw["blogItems"] || []).select { |n| n["visible"] != false }
+    @home  = raw["homePage"] || {}
+  rescue => e
+    Rails.logger.error "CMS content read failed: #{e.message}"
+    @page = {}; @items = []; @home = {}
+  end
+
   def events
     raw = ContentStore.raw
     @page  = raw["eventsPage"] || {}

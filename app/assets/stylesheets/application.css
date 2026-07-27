@@ -915,6 +915,10 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .hist-nav-dropdown-item:last-child { border-bottom: none; }
 .hist-nav-dropdown-item:hover { background: rgba(255,255,255,0.1); }
 
+/* Resources nav button (News / Blogs dropdown trigger) */
+.nav-resources-btn { display: inline-flex; align-items: center; gap: 7px; }
+.nav-resources-btn svg { width: 10px; height: 6px; flex-shrink: 0; }
+
 /* ── Hero content ────────────────────────────────────── */
 .hist-hero-content {
   display: flex; align-items: flex-start; gap: 60px;

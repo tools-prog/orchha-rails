@@ -55,6 +55,7 @@ Rails.application.routes.draw do
   get "/art-frescoes", to: "pages#art_frescoes"
   get "/darwazas", to: "pages#darwazas"
   get "/news", to: "pages#news"
+  get "/blogs", to: "pages#blogs"
   get "/support-us", to: "pages#support_us"
   get "up" => "rails/health#show", as: :rails_health_check
 

@@ -26,6 +26,8 @@ module AdminHelper
     "visitOrchhaPage"   => "Visit Orchha Page",
     "newsPage"          => "News Page Settings",
     "newsItems"         => "News",
+    "blogItems"         => "Blogs",
+    "blogsPage"         => "Blogs Page",
     "museums"           => "Museums",
     "itineraries"       => "Itineraries",
     "freedomFighters"   => "Freedom Fighters",
@@ -105,6 +107,11 @@ module AdminHelper
           children: [
             { label: "All News", path: admin_collection_path("newsItems"), match: %r{/collections/newsItems} },
             { label: "Page Settings", path: admin_edit_section_path("newsPage"), match: %r{/sections/newsPage} }
+          ] },
+        { label: "Blogs", path: admin_collection_path("blogItems"), match: %r{/(collections/blogItems|sections/blogsPage)},
+          children: [
+            { label: "All Blogs", path: admin_collection_path("blogItems"), match: %r{/collections/blogItems} },
+            { label: "Page Settings", path: admin_edit_section_path("blogsPage"), match: %r{/sections/blogsPage} }
           ] },
         { label: "Museums", path: admin_collection_path("museums"), match: %r{/collections/museums} },
         { label: "Freedom Fighters", path: admin_collection_path("freedomFighters"), match: %r{/collections/freedomFighters} },
