@@ -8,6 +8,7 @@ if ENV["ADMIN_EMAIL"].present? && ENV["ADMIN_PASSWORD"].present?
   user = User.find_or_initialize_by(email_address: ENV["ADMIN_EMAIL"])
   if user.new_record?
     user.password = ENV["ADMIN_PASSWORD"]
+    user.role = "admin"
     user.save!
     puts "Created admin user #{user.email_address}."
   end

@@ -1,5 +1,8 @@
 module Admin
   class PagesController < BaseController
+    # Content managers may edit existing pages' content, but only admins can
+    # add new pages or remove them.
+    before_action :require_admin, only: [ :new, :create, :destroy ]
     before_action :set_page, only: [ :edit, :update, :destroy ]
 
     def index

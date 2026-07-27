@@ -7,6 +7,7 @@ Rails.application.routes.draw do
     resources :uploads, only: [ :create ]
     resources :media, only: [ :index, :create, :destroy ]
     resources :pages, except: [ :show ]
+    resources :users, except: [ :show ]
     get "export", to: "exports#show", defaults: { format: :json }
 
     get    "hero",                                to: "hero#edit",         as: :edit_hero

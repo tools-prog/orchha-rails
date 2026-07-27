@@ -1,0 +1,5 @@
+<h2 class="adm-page-title">Edit user — <%= @user.email_address %></h2>
+<% if @user.last_admin? %>
+<p class="adm-muted" style="margin-bottom:14px;">This is the only admin account, so its role can't be changed until another admin exists.</p>
+<% end %>
+<%= render "form", user: @user, submit_label: "Save changes" %>

@@ -1,0 +1,44 @@
+<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;">
+  <h2 class="adm-page-title" style="margin-bottom:0;">Users</h2>
+  <div style="display:flex; gap:10px;">
+    <a href="<%= new_admin_user_path %>" class="adm-btn">+ New user</a>
+    <a href="<%= admin_root_path %>" class="adm-btn adm-btn-outline">Back</a>
+  </div>
+</div>
+
+<div class="adm-card">
+  <table class="adm-table">
+    <thead>
+      <tr><th>Email</th><th>Role</th><th>Created</th><th></th></tr>
+    </thead>
+    <tbody>
+      <% @users.each do |user| %>
+      <tr>
+        <td>
+          <strong><%= user.email_address %></strong>
+          <% if user == current_user %><span class="adm-muted">(you)</span><% end %>
+        </td>
+        <td>
+          <span style="display:inline-block; padding:3px 10px; border-radius:12px; font-size:12px; font-weight:600; <%= user.admin? ? 'background:#f3d9a4; color:#5a3a00;' : 'background:#e3efdd; color:#2c5424;' %>">
+            <%= user.admin? ? "Admin" : "Content Manager" %>
+          </span>
+        </td>
+        <td class="adm-muted"><%= user.created_at.strftime("%d %b %Y") %></td>
+        <td style="text-align:right; white-space:nowrap;">
+          <a href="<%= edit_admin_user_path(user) %>" class="adm-btn adm-btn-outline" style="padding:4px 12px; font-size:12px;">Edit / Reset password</a>
+          <% unless user == current_user || user.last_admin? %>
+          <%= button_to "Delete", admin_user_path(user), method: :delete,
+                form: { onsubmit: "return confirm('Delete #{user.email_address}? They will no longer be able to sign in.')", style: "display:inline-block; margin-left:6px;" },
+                class: "adm-btn adm-btn-outline", style: "padding:4px 12px; font-size:12px;" %>
+          <% end %>
+        </td>
+      </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
+<p class="adm-muted" style="margin-top:6px;">
+  <strong>Admin</strong> — full access: edit content, add/remove pages and sections, manage users.<br>
+  <strong>Content Manager</strong> — can edit site content only.
+</p>

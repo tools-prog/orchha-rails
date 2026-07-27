@@ -121,7 +121,14 @@ module AdminHelper
         { label: "Site Settings", path: admin_edit_section_path("settings"), match: %r{/sections/settings} },
         { label: "Backup", path: admin_export_path, match: /never/ }
       ] }
-    ]
+    ].tap do |nav|
+      # User management is admin-only, so content managers don't see it.
+      if current_user&.admin?
+        nav << { group: "Access", items: [
+          { label: "Users", path: admin_users_path, match: %r{/admin/users} }
+        ] }
+      end
+    end
   end
 
   def key_label(key)

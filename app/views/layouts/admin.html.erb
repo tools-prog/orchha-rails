@@ -149,6 +149,12 @@
           <% end %>
         </nav>
         <div class="adm-sidebar-foot">
+          <% if current_user %>
+          <span style="font-size:12px; color:rgba(255,255,255,0.65);">
+            <%= current_user.email_address %><br>
+            <%= current_user.admin? ? "Admin" : "Content Manager" %>
+          </span>
+          <% end %>
           <a href="/" target="_blank">View site ↗</a>
           <%= button_to "Sign out", session_path, method: :delete %>
         </div>

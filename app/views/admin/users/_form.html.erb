@@ -1,0 +1,40 @@
+<%# locals: user, submit_label; on edit a blank password keeps the current one %>
+<div class="adm-card" style="max-width:520px;">
+  <%= form_with model: [ :admin, user ] do |f| %>
+
+    <div style="margin-bottom:16px;">
+      <label style="display:block; font-size:13px; font-weight:600; color:#6e1603; margin-bottom:5px;">Email address</label>
+      <%= f.email_field :email_address, class: "adm-input", required: true, placeholder: "person@example.com" %>
+    </div>
+
+    <div style="margin-bottom:16px;">
+      <label style="display:block; font-size:13px; font-weight:600; color:#6e1603; margin-bottom:5px;">
+        <%= user.persisted? ? "Reset password" : "Password" %>
+      </label>
+      <%= f.password_field :password, class: "adm-input",
+            autocomplete: "new-password", minlength: 8,
+            required: user.new_record?,
+            placeholder: user.persisted? ? "Leave blank to keep the current password" : "At least 8 characters" %>
+      <% if user.persisted? %>
+      <p class="adm-muted" style="margin-top:4px;">Enter a new password only if you want to reset it.</p>
+      <% end %>
+    </div>
+
+    <div style="margin-bottom:22px;">
+      <label style="display:block; font-size:13px; font-weight:600; color:#6e1603; margin-bottom:5px;">Role</label>
+      <% User::ROLES.each do |value, description| %>
+      <label style="display:flex; gap:9px; align-items:flex-start; padding:10px 12px; border:1.5px solid <%= user.role == value ? '#6e1603' : '#ddd0bf' %>; border-radius:9px; margin-bottom:8px; cursor:pointer; background:#faf7f2;">
+        <%= f.radio_button :role, value, style: "margin-top:3px;" %>
+        <span style="font-size:14px;"><%= description.sub(" — ", " — ").split(" — ").first %>
+          <span class="adm-muted" style="display:block; font-size:12.5px;"><%= description.split(" — ").last %></span>
+        </span>
+      </label>
+      <% end %>
+    </div>
+
+    <div style="display:flex; gap:10px;">
+      <%= f.submit submit_label, class: "adm-btn" %>
+      <a href="<%= admin_users_path %>" class="adm-btn adm-btn-outline">Cancel</a>
+    </div>
+  <% end %>
+</div>
