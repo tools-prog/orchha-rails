@@ -2600,7 +2600,13 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 64px 48px 64px 80px;
+  /* `safe` keeps the block from overflowing upward under the fixed navbar on
+     short laptops; it falls back to plain `center` where unsupported. */
+  justify-content: safe center;
+  /* Top/bottom stay equal so the centred position on tall screens is
+     unchanged; 110px clears the navbar (top 32px + 58px bar) plus breathing
+     room once the content is tall enough to hit the padding edge. */
+  padding: 110px 48px 110px 80px;
   position: relative;
   z-index: 1;
 }
@@ -2608,19 +2614,20 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .aw-heading {
   font-family: 'Scotch Display', serif;
   font-weight: 600;
-  font-size: 61.311px;
-  line-height: 68px;
+  /* shrinks on short viewports so the block clears the navbar (68/61.311) */
+  font-size: min(61.311px, 7.2vh);
+  line-height: 1.109;
   color: #6e1603;
-  margin: 0 0 13px 0;
+  margin: 0 0 min(13px, 1.6vh) 0;
 }
 
 .aw-body {
   font-family: 'Gambetta Variable', serif;
   font-weight: 500;
-  font-size: 21px;
-  line-height: 29px;
+  font-size: min(21px, 2.55vh);
+  line-height: 1.381;
   color: #000;
-  margin: 0 0 26px 0;
+  margin: 0 0 min(26px, 3.2vh) 0;
   max-width: 601px;
 }
 
@@ -2628,7 +2635,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .aw-stats {
   display: flex;
   align-items: center;
-  gap: 36px;
+  gap: min(36px, 4.4vh);
 }
 .aw-stat {
   display: flex;
@@ -2636,7 +2643,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   gap: 14px;
 }
 .aw-stat-icon {
-  width: 57px; height: 57px;
+  width: min(57px, 6.8vh); height: min(57px, 6.8vh);
   flex-shrink: 0;
 }
 .aw-stat-text {
@@ -2647,14 +2654,14 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .aw-stat-lbl {
   font-family: 'Gambetta Variable', serif;
   font-weight: 500;
-  font-size: 18.68px;
+  font-size: min(18.68px, 2.4vh);
   color: #6e1603;
   letter-spacing: -0.19px;
 }
 .aw-stat-num {
   font-family: 'Gambetta Variable', serif;
   font-weight: 700;
-  font-size: 32.577px;
+  font-size: min(32.577px, 4.1vh);
   line-height: 1.1;
   color: #6e1603;
   white-space: nowrap;
@@ -2665,41 +2672,44 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   flex: 0 0 54%;
   position: relative;
   display: flex;
-  align-items: center;
+  align-items: safe center;
   justify-content: center;
-  padding: 48px 60px 48px 24px;
+  /* symmetric like .aw-left, so the collage keeps its centred position on
+     tall screens but never rides up under the navbar on short ones */
+  padding: 110px 60px 110px 24px;
 }
 
 /* Card grid — absolute positions within aw-right-cards */
 .aw-cards-grid {
   position: relative;
-  width: 530px;
-  height: 530px;
+  /* cards inside are positioned proportionally, so the whole collage scales */
+  width: min(530px, 74vh);
+  height: min(530px, 74vh);
   flex-shrink: 0;
 }
 
 /* Card 1 — large, top-left */
 .aw-gc1 {
-  width: 281px; height: 279px;
+  width: 53.019%; height: 52.642%;
   top: 0; left: 0;
 }
 /* Card 2 — medium, top-right, offset down */
 .aw-gc2 {
-  width: 228px; height: 229px;
-  top: 107px; left: 320px;
+  width: 43.019%; height: 43.208%;
+  top: 20.189%; left: 60.377%;
 }
 /* Card 3 — medium, below card 1 */
 .aw-gc3 {
-  width: 228px; height: 228px;
-  top: 323px; left: 53px;
+  width: 43.019%; height: 43.019%;
+  top: 60.943%; left: 10%;
 }
 
 /* View Art Gallery button — below Card 2 */
 .aw-gallery-btn {
   /* right of the bottom-left collage card, per Figma (2502,588 rel 2185,176) */
   position: absolute;
-  left: 317px;
-  top: 412px;
+  left: 59.811%;
+  top: 77.736%;
 }
 
 /* ═══════════════════════════════════════════════════════════
