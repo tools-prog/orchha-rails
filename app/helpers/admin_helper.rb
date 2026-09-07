@@ -185,7 +185,7 @@ module AdminHelper
   # controls. Media-named fields inside each row get the Browse picker.
   # Empty arrays for these names still get the card editor (an "Add entry"
   # button with the right columns) instead of a bare textarea.
-  OBJECT_LIST_FIELDS = %w[experiences subMonuments stops gates cards seasons rows groups reachItems travelItems].freeze
+  OBJECT_LIST_FIELDS = %w[experiences subMonuments stops gates cards seasons rows groups reachItems travelItems logos].freeze
 
   def object_list_field?(value, name = nil)
     return true if value == [] && OBJECT_LIST_FIELDS.include?(name.to_s)

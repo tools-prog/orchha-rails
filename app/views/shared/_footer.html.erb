@@ -1,11 +1,17 @@
 <%# Site footer. locals:
-      ft — @home['footer'] hash (links, email, phone, copyright, org, virtualTourUrl)
-    Always uses the high-res footer_logo_* assets — the bare
-    incredible_india.png / mpt_logo.png are 56-80px sources and blur at
-    footer size. %>
+      ft — @home['footer'] hash (links, email, phone, copyright, org,
+           virtualTourUrl, logos)
+    NB: footer_logo_incredible_india.png / footer_logo_mptdc.png in
+    public/images are fully transparent — use incredible_india.png and
+    mpt_logo.png instead. %>
 <% ft_links = ft['links'] || []
-   ii_logo  = '/images/incredible_india.png'
-   mpt_logo = '/images/mpt_logo.png'
+   # Logos are CMS-managed (Home → Page Content → footer → logos). The
+   # fallback keeps the original three if the key is missing on an old deploy.
+   ft_logos = ft['logos'].presence || [
+     { 'image' => '/images/incredible_india.png',      'altText' => 'Incredible India',   'widthPx' => 75.584 },
+     { 'image' => '/images/mpt_logo.png',              'altText' => 'MPTDC',              'widthPx' => 113.311 },
+     { 'image' => '/images/footer_logo_sabhyata.png',  'altText' => 'Sabhyata Foundation','widthPx' => 160 }
+   ]
 %>
 <footer class="footer">
   <div class="footer-container">
@@ -17,9 +23,12 @@
         <a href="<%= ft['virtualTourUrl'].presence || '#' %>" class="footer-vt-btn"<%= ' target="_blank" rel="noopener"'.html_safe if ft['virtualTourUrl'].present? && ft['virtualTourUrl'] != '#' %>>Orchha Virtual Tour</a>
       </div>
       <div class="footer-logos">
-        <img src="<%= ii_logo %>" alt="Incredible India" class="footer-logo-ii">
-        <img src="<%= mpt_logo %>" alt="MPTDC" class="footer-logo-mptdc">
-        <img src="/images/footer_logo_sabhyata.png" alt="Sabhyata Foundation" class="footer-logo-sabhyata">
+        <% ft_logos.each do |logo| %>
+          <% next if logo['image'].blank? %>
+          <img src="<%= logo['image'] %>" alt="<%= logo['altText'] %>"
+               class="footer-logo<%= ' footer-logo--colour' if logo['keepColour'] %>"
+               style="--fl-w: <%= (logo['widthPx'].presence || 120).to_f %>px">
+        <% end %>
       </div>
       <div class="footer-map-col">
         <div class="footer-map">

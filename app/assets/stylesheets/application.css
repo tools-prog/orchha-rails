@@ -675,9 +675,10 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   width: 174.187px; gap: 27px; flex-shrink: 0;
 }
 .footer-logos img { display: block; filter: brightness(0) invert(1); }
-.footer-logo-ii    { width: 75.584px;  height: auto; }
-.footer-logo-mptdc { width: 113.311px; height: auto; }
-.footer-logo-sabhyata { width: 160px; height: auto; }
+/* Width comes from the CMS per logo (--fl-w); monochrome-white by default,
+   with an opt-out for partner marks that must keep their own colours. */
+.footer-logo { width: var(--fl-w, 120px); height: auto; }
+.footer-logos img.footer-logo--colour { filter: none; }
 .footer-map-col {
   display: flex; flex-direction: column; gap: 26px;
   width: 574px; flex-shrink: 0;
@@ -765,9 +766,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   .footer-links { width: 100%; gap: 24px; }
   .footer-link { font-size: 17px; }
   .footer-logos { flex-direction: row; width: 100%; justify-content: flex-start; flex-wrap: wrap; gap: 20px; align-items: center; }
-  .footer-logo-ii    { width: 52px; }
-  .footer-logo-mptdc { width: 80px; }
-  .footer-logo-sabhyata { width: 120px; }
+  .footer-logo { width: calc(var(--fl-w, 120px) * 0.72); }
   .footer-map-col { width: 100%; }
   .footer-map { height: 220px; }
   .footer-contact { gap: 10px 18px; }

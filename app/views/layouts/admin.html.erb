@@ -470,7 +470,12 @@
           if (val === true || val === false) {
             const sel = document.createElement('select');
             sel.className = 'adm-input';
-            sel.innerHTML = '<option value="true">Yes (visible)</option><option value="false">No (hidden)</option>';
+            // "(visible/hidden)" only makes sense for show/visible flags;
+            // other yes-no fields (e.g. a logo's keepColour) read plainly.
+            var isVisibilityFlag = /^(show|visible$|is[A-Z])/.test(String(key));
+            sel.innerHTML = isVisibilityFlag
+              ? '<option value="true">Yes (visible)</option><option value="false">No (hidden)</option>'
+              : '<option value="true">Yes</option><option value="false">No</option>';
             sel.value = String(val);
             sel.addEventListener('change', () => { holder[key] = sel.value === 'true'; onChange(); });
             return sel;

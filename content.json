@@ -1688,6 +1688,26 @@
       ]
     },
     "footer": {
+      "logos": [
+        {
+          "image": "/images/incredible_india.png",
+          "altText": "Incredible India",
+          "widthPx": 75.584,
+          "keepColour": false
+        },
+        {
+          "image": "/images/mpt_logo.png",
+          "altText": "MPTDC",
+          "widthPx": 113.311,
+          "keepColour": false
+        },
+        {
+          "image": "/images/footer_logo_sabhyata.png",
+          "altText": "Sabhyata Foundation",
+          "widthPx": 160,
+          "keepColour": false
+        }
+      ],
       "copyright": "@2026ORCHHA",
       "org": "SABHYATA Foundation",
       "email": "contact@orchha.com",
