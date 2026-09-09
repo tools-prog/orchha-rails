@@ -1731,16 +1731,8 @@
           "url": "/disclaimer"
         },
         {
-          "label": "Contact Us",
-          "url": "/contact"
-        },
-        {
           "label": "Terms & Conditions",
           "url": "/terms"
-        },
-        {
-          "label": "Accessibility Statement",
-          "url": "/accessibility"
         }
       ]
     },
